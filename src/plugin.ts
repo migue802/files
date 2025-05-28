@@ -84,7 +84,7 @@ export interface FilesPluginOptions {
         token: string,
         path: string,
         env: "prod" | "test",
-    ) => string | URL;
+    ) => string;
 }
 
 /**
@@ -120,7 +120,7 @@ export function hydrateFiles<R extends RawApi = RawApi>(
     const buildPath = (path: string) =>
         buildFilePath
             ? buildFilePath(root, token, path, environment)
-            : undefined;
+            : path;
 
     const methods = getFileMethods(buildLink, buildPath);
     const t: Transformer = async (prev, method, payload, signal) => {

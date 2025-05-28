@@ -34,8 +34,7 @@ export interface FileX {
      *
      * If you are using a local Bot API server, then the local file will be
      * copied over to the specified path, or to a new temporary location, unless
-     * you set `skipAbsolutePathCheck` to `true` in the main configuration, and
-     * set a custom `buildFileUrl` function that returns an URL.
+     * you set `buildFilePath`, which will be used instead of `buildFileUrl`.
      *
      * If the `file_path` of this file object is `undefined`, this method will
      * throw an error.
@@ -73,7 +72,7 @@ export interface FileX {
 
 export function getFileMethods(
     linkBuilder: (path: string) => string | URL,
-    pathBuilder: (path: string) => string | URL | undefined,
+    pathBuilder: (path: string) => string,
 ) {
     const methods: FileX = {
         getUrl(this: File) {
@@ -82,11 +81,8 @@ export function getFileMethods(
                 const id = this.file_id;
                 throw new Error(`File path is not available for file '${id}'`);
             }
-            if (isAbsolutePath(path)) {
-                var bpath = pathBuilder(path);
-                if (bpath === undefined) return path;
-            }
-            const link = bpath ?? linkBuilder(path);
+            if (isAbsolutePath(path)) return pathBuilder(path);
+            const link = linkBuilder(path);
             if (link instanceof URL) return link.href;
             return link;
         },
