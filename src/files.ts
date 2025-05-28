@@ -33,7 +33,9 @@ export interface FileX {
      * you access to the downloaded file.
      *
      * If you are using a local Bot API server, then the local file will be
-     * copied over to the specified path, or to a new temporary location.
+     * copied over to the specified path, or to a new temporary location, unless
+     * you set `skipAbsolutePathCheck` to `true` in the main configuration, and
+     * set a custom `buildFileUrl` function that returns an URL.
      *
      * If the `file_path` of this file object is `undefined`, this method will
      * throw an error.

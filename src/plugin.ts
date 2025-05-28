@@ -66,9 +66,9 @@ export interface FilesPluginOptions {
     ) => string | URL;
     /**
      * If set to `true`, the plugin will not check whether the file path
-     * is an absolute path. This is useful if you are using a local Bot API Server
-     * but the server is on another machine, and you want to download files
-     * from a custom location.
+     * is an absolute path when getting the file URL. This is useful 
+     * if you are using a local Bot API Server, but the server is on 
+     * another machine, and you want to download files from a custom location.
      */
     skipAbsolutePathCheck?: boolean;
 }
