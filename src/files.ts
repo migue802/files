@@ -71,6 +71,7 @@ export interface FileX {
 
 export function getFileMethods(
     linkBuilder: (path: string) => string | URL,
+    skipAbsolutePathCheck: boolean,
 ) {
     const methods: FileX = {
         getUrl(this: File) {
@@ -79,7 +80,7 @@ export function getFileMethods(
                 const id = this.file_id;
                 throw new Error(`File path is not available for file '${id}'`);
             }
-            if (isAbsolutePath(path)) return path;
+            if (!skipAbsolutePathCheck && isAbsolutePath(path)) return path;
             const link = linkBuilder(path);
             if (link instanceof URL) return link.href;
             return link;
@@ -87,13 +88,13 @@ export function getFileMethods(
         async download(path?: string) {
             const url = this.getUrl();
             path ??= await createTempFile();
-            if (isAbsolutePath(url)) await copyFile(url, path);
+            if (!skipAbsolutePathCheck && isAbsolutePath(url)) await copyFile(url, path);
             else await downloadFile(url, path);
             return path;
         },
         async *[Symbol.asyncIterator]() {
             const url = this.getUrl();
-            if (isAbsolutePath(url)) {
+            if (!skipAbsolutePathCheck && isAbsolutePath(url)) {
                 yield* readFile(url);
             } else {
                 yield* await fetchFile(url);

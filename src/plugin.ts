@@ -64,6 +64,13 @@ export interface FilesPluginOptions {
         path: string,
         env: "prod" | "test",
     ) => string | URL;
+    /**
+     * If set to `true`, the plugin will not check whether the file path
+     * is an absolute path. This is useful if you are using a local Bot API Server
+     * but the server is on another machine, and you want to download files
+     * from a custom location.
+     */
+    skipAbsolutePathCheck?: boolean;
 }
 
 /**
@@ -90,10 +97,11 @@ export function hydrateFiles<R extends RawApi = RawApi>(
 ): Transformer<R> {
     const root = options?.apiRoot ?? "https://api.telegram.org";
     const environment = options?.environment ?? "prod";
+    const skipAbsolutePathCheck = options?.skipAbsolutePathCheck ?? false;
     const buildFileUrl = options?.buildFileUrl ?? defaultBuildFileUrl;
     const buildLink = (path: string) =>
         buildFileUrl(root, token, path, environment);
-    const methods = getFileMethods(buildLink);
+    const methods = getFileMethods(buildLink, skipAbsolutePathCheck);
     const t: Transformer = async (prev, method, payload, signal) => {
         const res = await prev(method, payload, signal);
         if (res.ok && isFile(res.result)) {
