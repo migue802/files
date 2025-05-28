@@ -73,7 +73,7 @@ export interface FileX {
 
 export function getFileMethods(
     linkBuilder: (path: string) => string | URL,
-    skipAbsolutePathCheck: boolean,
+    pathBuilder: (path: string) => string | URL | undefined,
 ) {
     const methods: FileX = {
         getUrl(this: File) {
@@ -82,8 +82,11 @@ export function getFileMethods(
                 const id = this.file_id;
                 throw new Error(`File path is not available for file '${id}'`);
             }
-            if (!skipAbsolutePathCheck && isAbsolutePath(path)) return path;
-            const link = linkBuilder(path);
+            if (isAbsolutePath(path)) {
+                var bpath = pathBuilder(path);
+                if (bpath === undefined) return path;
+            }
+            const link = bpath ?? linkBuilder(path);
             if (link instanceof URL) return link.href;
             return link;
         },

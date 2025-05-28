@@ -65,12 +65,26 @@ export interface FilesPluginOptions {
         env: "prod" | "test",
     ) => string | URL;
     /**
-     * If set to `true`, the plugin will not check whether the file path
-     * is an absolute path when getting the file URL. This is useful 
-     * if you are using a local Bot API Server, but the server is on 
-     * another machine, and you want to download files from a custom location.
+     * Similar to `buildFileUrl`, but used when the server returns an
+     * absolute file path instead of a URL. This is useful when you are
+     * running a Bot API server, and you want to download files
+     * from a custom remote location instead of a local file system.
+     * 
+     * The function can still pass a URL, and the plugin will download the
+     * file instead of reading it from the file system.
+     * 
+     * @param root The URL that was passed in `apiRoot`, or its default value
+     * @param token The bot's token that was passed when installing the plugin
+     * @param path The `file_path` value that identifies the file
+     * @param env The value that was passed in `environment`, or its default value
+     * @returns The URL or file path that will be used to download the file.
      */
-    skipAbsolutePathCheck?: boolean;
+    buildFilePath?: (
+        root: string,
+        token: string,
+        path: string,
+        env: "prod" | "test",
+    ) => string | URL;
 }
 
 /**
@@ -97,11 +111,18 @@ export function hydrateFiles<R extends RawApi = RawApi>(
 ): Transformer<R> {
     const root = options?.apiRoot ?? "https://api.telegram.org";
     const environment = options?.environment ?? "prod";
-    const skipAbsolutePathCheck = options?.skipAbsolutePathCheck ?? false;
+
     const buildFileUrl = options?.buildFileUrl ?? defaultBuildFileUrl;
     const buildLink = (path: string) =>
         buildFileUrl(root, token, path, environment);
-    const methods = getFileMethods(buildLink, skipAbsolutePathCheck);
+
+    const buildFilePath = options?.buildFilePath ?? undefined;
+    const buildPath = (path: string) =>
+        buildFilePath
+            ? buildFilePath(root, token, path, environment)
+            : undefined;
+
+    const methods = getFileMethods(buildLink, buildPath);
     const t: Transformer = async (prev, method, payload, signal) => {
         const res = await prev(method, payload, signal);
         if (res.ok && isFile(res.result)) {
