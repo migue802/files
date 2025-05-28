@@ -88,13 +88,13 @@ export function getFileMethods(
         async download(path?: string) {
             const url = this.getUrl();
             path ??= await createTempFile();
-            if (!skipAbsolutePathCheck && isAbsolutePath(url)) await copyFile(url, path);
+            if (isAbsolutePath(url)) await copyFile(url, path);
             else await downloadFile(url, path);
             return path;
         },
         async *[Symbol.asyncIterator]() {
             const url = this.getUrl();
-            if (!skipAbsolutePathCheck && isAbsolutePath(url)) {
+            if (isAbsolutePath(url)) {
                 yield* readFile(url);
             } else {
                 yield* await fetchFile(url);
